@@ -73,7 +73,7 @@ if user_input:
             api_response = requests.post(
                 f"{API_URL}/chat",
                 json={"messages": st.session_state.messages},
-                timeout=60  # LLM can take time, wait up to 60 seconds
+                timeout=60
             )
 
             if api_response.status_code == 200:
@@ -81,17 +81,28 @@ if user_input:
                 response_data = api_response.json()
                 response = response_data["response"]
 
+            elif api_response.status_code == 503:
+                # Ollama is unavailable
+                response = "⚠️ The oracle is silent. Ollama appears to be offline."
+
+            elif api_response.status_code == 504:
+                # Ollama timed out
+                response = "⚠️ Aldric ponders too long. Please try again."
+
             else:
-                # Backend returned an error we didn't expect
-                response = f"Backend error: {api_response.status_code}"
+                # Any other backend error
+                try:
+                    error_detail = api_response.json().get("detail", "Unknown error")
+                except Exception:
+                    error_detail = f"HTTP {api_response.status_code}"
+
+                response = f"⚠️ Backend error: {error_detail}"
 
         except requests.exceptions.Timeout:
-            # LLM took too long to respond
-            response = "Aldric is taking too long to respond. Try again."
+            response = "⚠️ The backend took too long. Is FastAPI still running?"
 
         except requests.exceptions.ConnectionError:
-            # Backend went down mid-session
-            response = "Lost connection to backend. Is FastAPI still running?"
+            response = "⚠️ Lost connection to backend. Is FastAPI still running?"
 
     # 4. Add response to history
     st.session_state.messages.append({
