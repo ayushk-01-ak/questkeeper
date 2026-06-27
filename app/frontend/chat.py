@@ -1,11 +1,14 @@
 # app/frontend/chat.py
+# Streamlit frontend that talks to our FastAPI backend
+# Notice: no LLM imports here anymore
+# The frontend only knows about the API, not about Ollama
+
 import streamlit as st
-import sys
-import os
+import requests  # For calling our FastAPI backend
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
-from app.core.llm import ask_llm_with_history  # Updated import
+# The URL of our FastAPI backend
+# This is OUR server, not Ollama
+API_URL = "http://localhost:8000"
 
 
 # --- Page Configuration ---
@@ -17,17 +20,24 @@ st.set_page_config(
 
 st.title("🎲 QuestKeeper")
 st.caption("Your local AI Dungeon Master")
+
+
+# --- Check Backend Health ---
+# Before showing the chat, verify the backend is running
+# If it's not, show a clear error instead of a confusing crash
+try:
+    health = requests.get(f"{API_URL}/health", timeout=3)
+    if health.status_code == 200:
+        st.success("✅ Connected to QuestKeeper backend")
+    else:
+        st.error("❌ Backend returned an error")
+except requests.exceptions.ConnectionError:
+    # This error means the backend server isn't running
+    st.error("❌ Cannot connect to backend. Is FastAPI running?")
+    st.code("uvicorn app.api.routes:app --reload --port 8000")
+    st.stop()  # Stop rendering the rest of the page
+
 st.divider()
-
-
-# --- DM Personality ---
-# This defines who Aldric is in every single request
-# It never changes during a conversation
-SYSTEM_PROMPT = """You are Aldric, a wise and dramatic Dungeon Master.
-You speak in an atmospheric, immersive tone.
-You remember everything the player tells you.
-Keep responses under 4 sentences unless asked for more.
-Never break character."""
 
 
 # --- Session State Initialization ---
@@ -52,17 +62,36 @@ if user_input:
         "content": user_input
     })
 
-    # 2. Display user message
+    # 2. Display user message immediately
     with st.chat_message("user"):
         st.write(user_input)
 
-    # 3. Send FULL history to LLM
-    # This is the key change — we pass all messages, not just the latest
+    # 3. Send full history to FastAPI backend
+    # Notice: we send to OUR backend now, not to Ollama directly
     with st.spinner("Aldric is thinking..."):
-        response = ask_llm_with_history(
-            messages=st.session_state.messages,
-            system_prompt=SYSTEM_PROMPT
-        )
+        try:
+            api_response = requests.post(
+                f"{API_URL}/chat",
+                json={"messages": st.session_state.messages},
+                timeout=60  # LLM can take time, wait up to 60 seconds
+            )
+
+            if api_response.status_code == 200:
+                # Extract the response text from JSON
+                response_data = api_response.json()
+                response = response_data["response"]
+
+            else:
+                # Backend returned an error we didn't expect
+                response = f"Backend error: {api_response.status_code}"
+
+        except requests.exceptions.Timeout:
+            # LLM took too long to respond
+            response = "Aldric is taking too long to respond. Try again."
+
+        except requests.exceptions.ConnectionError:
+            # Backend went down mid-session
+            response = "Lost connection to backend. Is FastAPI still running?"
 
     # 4. Add response to history
     st.session_state.messages.append({
