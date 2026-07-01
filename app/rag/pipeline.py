@@ -22,17 +22,66 @@ _embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 print("Embedding model ready.")
 
 
-def retrieve_context(query: str, top_k: int = 3) -> str:
+def retrieve_context(query: str, top_k: int = 3, messages: list = None) -> str:
     """
     Find relevant chunks for a query and return them as one string.
 
+    Uses the last 3 messages as context for better retrieval
+    when the current query alone is ambiguous (e.g. "Who lives there?")
+
     Args:
-        query: The player's message
+        query: The latest player message
         top_k: Number of chunks to retrieve
+        messages: Full conversation history (optional)
 
     Returns:
         A single string of relevant context from the PDF
     """
+
+    # --- Query Rewriting (Approach 1: Concatenation) ---
+    # If we have conversation history, build a richer search query
+    # by combining the last few messages with the current query
+    if messages and len(messages) > 1:
+
+        # Take the last 3 messages maximum
+        # More than 3 adds noise without much benefit
+        recent_messages = messages[-3:]
+
+        # Extract just the text content from each message
+        recent_text = " ".join([m["content"] for m in recent_messages])
+
+        # Combine recent context with current query
+        # Current query goes last so it gets slightly more weight
+        search_query = f"{recent_text} {query}"
+
+    else:
+        # First message — no history yet, use query as-is
+        search_query = query
+
+    # Connect to ChromaDB
+    client = chromadb.PersistentClient(path=CHROMA_PATH)
+    collection = client.get_or_create_collection(
+        name=COLLECTION_NAME,
+        metadata={"hnsw:space": "cosine"}
+    )
+
+    # Check if we have any documents stored
+    if collection.count() == 0:
+        return ""
+
+    # Convert the enriched query to a vector
+    query_embedding = _embedding_model.encode([search_query])
+
+    # Find top_k most similar chunks
+    results = collection.query(
+        query_embeddings=query_embedding.tolist(),
+        n_results=min(top_k, collection.count())
+    )
+
+    chunks = results["documents"][0]
+    context = "\n\n---\n\n".join(chunks)
+
+    return context
     # Connect to ChromaDB
     client = chromadb.PersistentClient(path=CHROMA_PATH)
     collection = client.get_or_create_collection(
