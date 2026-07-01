@@ -15,8 +15,8 @@ Runs completely offline using Ollama and a local LLM.
 | Phase 3 | FastAPI Backend | ✅ Complete |
 | Phase 4 | Connect FastAPI to Ollama | ✅ Complete |
 | Phase 5 | SQLite Database | ✅ Complete |
-| Phase 6 | RAG Pipeline | 🚧 In Progress |
-| Phase 7 | Tool Calling | ⏳ Upcoming |
+| Phase 6 | RAG Pipeline | ✅ Complete |
+| Phase 7 | Tool Calling | 🚧 In Progress |
 | Phase 8 | Conversation Memory | ⏳ Upcoming |
 | Phase 9 | NPC Personalities | ⏳ Upcoming |
 | Phase 10 | Docker | ⏳ Upcoming |
