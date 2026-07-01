@@ -1,4 +1,55 @@
-# app/api/routes.py
+
+from app.rag.pipeline import retrieve_context, build_rag_prompt
+from app.core.llm import ask_llm
+
+
+# Replace the existing chat() function with this
+@app.post("/chat", response_model=ChatResponse)
+def chat(request: ChatRequest):
+    """
+    Chat route now enhanced with RAG.
+    Every player message triggers a context retrieval
+    before being sent to the LLM.
+    """
+    import requests as http_requests
+
+    messages_as_dicts = [
+        {"role": msg.role, "content": msg.content}
+        for msg in request.messages
+    ]
+
+    try:
+        # Get the latest player message for retrieval
+        latest_message = messages_as_dicts[-1]["content"]
+
+        # Step 1: Retrieve relevant lore context
+        context = retrieve_context(latest_message)
+
+        # Step 2: Build the RAG-enhanced prompt
+        prompt = build_rag_prompt(
+            system_prompt=SYSTEM_PROMPT,
+            context=context,
+            messages=messages_as_dicts
+        )
+
+        # Step 3: Send to LLM directly (not ask_llm_with_history
+        # because we already built the full prompt ourselves)
+        response = ask_llm(prompt)
+
+        return ChatResponse(response=response)
+
+    except http_requests.exceptions.ConnectionError:
+        raise HTTPException(
+            status_code=503,
+            detail="Cannot reach Ollama. Is it running?"
+        )
+
+    except Exception as e:
+        print(f"Error in /chat route: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Something went wrong. Check backend logs."
+        )# app/api/routes.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List

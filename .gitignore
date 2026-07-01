@@ -21,3 +21,5 @@ Thumbs.db
 
 # Database — contains player data, not source code
 questkeeper.db
+# ChromaDB vector store — generated from PDFs, not source code
+chroma_store/
