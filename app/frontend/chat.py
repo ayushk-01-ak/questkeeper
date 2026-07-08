@@ -1,17 +1,12 @@
 # app/frontend/chat.py
-# Streamlit frontend that talks to our FastAPI backend
-# Notice: no LLM imports here anymore
-# The frontend only knows about the API, not about Ollama
+# Streamlit frontend with full memory support
+# Tracks sessions, saves history, loads past context
 
 import streamlit as st
-import requests  # For calling our FastAPI backend
+import requests
 
-# The URL of our FastAPI backend
-# This is OUR server, not Ollama
 API_URL = "http://localhost:8000"
 
-
-# --- Page Configuration ---
 st.set_page_config(
     page_title="QuestKeeper",
     page_icon="🎲",
@@ -21,28 +16,99 @@ st.set_page_config(
 st.title("🎲 QuestKeeper")
 st.caption("Your local AI Dungeon Master")
 
-
-# --- Check Backend Health ---
-# Before showing the chat, verify the backend is running
-# If it's not, show a clear error instead of a confusing crash
+# --- Backend Health Check ---
 try:
     health = requests.get(f"{API_URL}/health", timeout=3)
     if health.status_code == 200:
-        st.success("✅ Connected to QuestKeeper backend")
-    else:
-        st.error("❌ Backend returned an error")
+        data = health.json()
+        if data["ollama"] == "ok":
+            st.success("✅ Connected — Ollama running")
+        else:
+            st.warning("⚠️ Backend running but Ollama unreachable")
 except requests.exceptions.ConnectionError:
-    # This error means the backend server isn't running
     st.error("❌ Cannot connect to backend. Is FastAPI running?")
     st.code("uvicorn app.api.routes:app --reload --port 8000")
-    st.stop()  # Stop rendering the rest of the page
+    st.stop()
 
 st.divider()
 
+# --- Character Selection ---
+# For now we hardcode character_id=1 (Arjun from testing)
+# Phase 9 will add a proper character selection screen
+CHARACTER_ID = 1
 
 # --- Session State Initialization ---
+if "session_id" not in st.session_state:
+    st.session_state.session_id = None
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+if "session_started" not in st.session_state:
+    st.session_state.session_started = False
+
+
+# --- Start Session ---
+if not st.session_state.session_started:
+
+    # Load past memory for this character
+    memory_response = requests.get(f"{API_URL}/memory/{CHARACTER_ID}")
+
+    if memory_response.status_code == 200:
+        memory_data = memory_response.json()
+        past_summaries = memory_data.get("past_summaries", [])
+        recent_messages = memory_data.get("recent_messages", [])
+
+        if past_summaries:
+            st.info(f"📜 {len(past_summaries)} past session(s) remembered")
+
+        # Load recent messages into session state
+        # So the chat history shows previous conversation
+        if recent_messages:
+            st.session_state.messages = recent_messages
+            st.info(f"💬 Loaded {len(recent_messages)} recent messages")
+
+    # Start a new session on the backend
+    session_response = requests.post(
+        f"{API_URL}/session/start",
+        json={"character_id": CHARACTER_ID}
+    )
+
+    if session_response.status_code == 200:
+        st.session_state.session_id = session_response.json()["session_id"]
+        st.session_state.session_started = True
+
+
+# --- Sidebar: Session Controls ---
+with st.sidebar:
+    st.header("Campaign Controls")
+    st.write(f"Character ID: {CHARACTER_ID}")
+    st.write(f"Session ID: {st.session_state.session_id}")
+
+    # End session button — triggers summarization
+    if st.button("⚔️ End Session & Save"):
+        if st.session_state.session_id:
+            with st.spinner("Summarizing session..."):
+                end_response = requests.post(
+                    f"{API_URL}/session/end",
+                    json={"session_id": st.session_state.session_id}
+                )
+
+            if end_response.status_code == 200:
+                summary = end_response.json()["summary"]
+                st.success("Session saved!")
+                st.write("**Summary:**")
+                st.write(summary)
+
+                # Reset for next session
+                st.session_state.session_started = False
+                st.session_state.messages = []
+                st.session_state.session_id = None
+            else:
+                st.error("Failed to save session")
+
+    st.divider()
+    st.caption("Session history is saved automatically after each message.")
 
 
 # --- Display Chat History ---
@@ -56,60 +122,48 @@ user_input = st.chat_input("Speak, adventurer...")
 
 if user_input:
 
-    # 1. Add user message to history
     st.session_state.messages.append({
         "role": "user",
         "content": user_input
     })
 
-    # 2. Display user message immediately
     with st.chat_message("user"):
         st.write(user_input)
 
-    # 3. Send full history to FastAPI backend
-    # Notice: we send to OUR backend now, not to Ollama directly
     with st.spinner("Aldric is thinking..."):
         try:
             api_response = requests.post(
                 f"{API_URL}/chat",
-                json={"messages": st.session_state.messages},
+                json={
+                    "messages": st.session_state.messages,
+                    "character_id": CHARACTER_ID,
+                    "session_id": st.session_state.session_id
+                },
                 timeout=60
             )
 
             if api_response.status_code == 200:
-                # Extract the response text from JSON
-                response_data = api_response.json()
-                response = response_data["response"]
+                data = api_response.json()
+                response = data["response"]
+
+                # Update session_id in case backend created one
+                st.session_state.session_id = data["session_id"]
 
             elif api_response.status_code == 503:
-                # Ollama is unavailable
-                response = "⚠️ The oracle is silent. Ollama appears to be offline."
-
-            elif api_response.status_code == 504:
-                # Ollama timed out
-                response = "⚠️ Aldric ponders too long. Please try again."
-
+                response = "⚠️ The oracle is silent. Ollama appears offline."
             else:
-                # Any other backend error
-                try:
-                    error_detail = api_response.json().get("detail", "Unknown error")
-                except Exception:
-                    error_detail = f"HTTP {api_response.status_code}"
-
-                response = f"⚠️ Backend error: {error_detail}"
+                detail = api_response.json().get("detail", "Unknown error")
+                response = f"⚠️ Error: {detail}"
 
         except requests.exceptions.Timeout:
-            response = "⚠️ The backend took too long. Is FastAPI still running?"
-
+            response = "⚠️ Aldric ponders too long. Try again."
         except requests.exceptions.ConnectionError:
-            response = "⚠️ Lost connection to backend. Is FastAPI still running?"
+            response = "⚠️ Lost connection to backend."
 
-    # 4. Add response to history
     st.session_state.messages.append({
         "role": "assistant",
         "content": response
     })
 
-    # 5. Display response
     with st.chat_message("assistant"):
         st.write(response)

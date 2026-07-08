@@ -33,14 +33,12 @@ def get_connection():
 def initialize_database():
     """
     Create all tables if they don't already exist.
-    Safe to call multiple times — won't overwrite existing data.
+    Safe to call multiple times.
     """
     connection = get_connection()
-
-    # cursor is what actually executes SQL commands
     cursor = connection.cursor()
 
-    # --- Characters Table ---
+    # Characters table (unchanged from Phase 5)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS characters (
             id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,11 +49,8 @@ def initialize_database():
             backstory TEXT DEFAULT ''
         )
     """)
-    # INTEGER PRIMARY KEY AUTOINCREMENT → id is assigned automatically
-    # NOT NULL → this field must always have a value
-    # DEFAULT → what value to use if none is provided
 
-    # --- Sessions Table ---
+    # Sessions table — one row per play session
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,10 +60,23 @@ def initialize_database():
             FOREIGN KEY (character_id) REFERENCES characters(id)
         )
     """)
-    # FOREIGN KEY links character_id here to id in characters table
-    # This enforces that you can't create a session for a non-existent character
 
-    # --- Inventory Table ---
+    # Messages table — every single conversation turn
+    # This is new in Phase 8
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS messages (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id   INTEGER NOT NULL,
+            character_id INTEGER NOT NULL,
+            role         TEXT NOT NULL,
+            content      TEXT NOT NULL,
+            created_at   TEXT NOT NULL,
+            FOREIGN KEY (session_id)   REFERENCES sessions(id),
+            FOREIGN KEY (character_id) REFERENCES characters(id)
+        )
+    """)
+
+    # Inventory table (unchanged from Phase 5)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,15 +87,10 @@ def initialize_database():
         )
     """)
 
-    # Save the changes permanently
     connection.commit()
-
-    # Always close the connection when done
     connection.close()
-
     print(f"Database initialized at: {DB_PATH}")
 
 
-# Run initialization when this file is executed directly
 if __name__ == "__main__":
     initialize_database()
