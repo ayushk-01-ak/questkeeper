@@ -12,62 +12,70 @@ from app.core.llm import ask_llm
 from app.core.tools import AVAILABLE_TOOLS
 
 
-# Tell the LLM exactly what tools exist and how to call them
-# This gets added to every prompt so Aldric always knows his abilities
 TOOLS_DESCRIPTION = """
-You have access to the following tools. Use them when the situation calls for it.
-To use a tool, output EXACTLY this format on its own line:
+IMPORTANT: You have tools available. Use them in the right situations.
+
+FORMAT (use exactly this, one tool per response):
 TOOL_CALL: tool_name(arg1=value1, arg2=value2)
 
-Available tools:
+TOOLS:
 
-TOOL_CALL: roll_dice(sides=20)
-→ Roll a die. sides must be one of: 4, 6, 8, 10, 12, 20, 100
-→ Use for: attacks, skill checks, saving throws, any random outcome
+1. TOOL_CALL: roll_dice(sides=20)
+   - Roll a die. sides must be: 4, 6, 8, 10, 12, 20, or 100
+   - USE FOR: attack rolls, skill checks, saving throws
+   - Example: Player attacks → TOOL_CALL: roll_dice(sides=20)
+   - After getting the result, narrate and STOP. Do not roll again.
 
-TOOL_CALL: check_inventory(character_id=1)
-→ Check what a character is carrying and their current HP
-→ Use for: inventory questions, item checks
+2. TOOL_CALL: check_inventory(character_id=1)
+   - Returns what the character is carrying and their current HP
+   - USE FOR: when player asks what they have
+   - NEVER invent items — always use this tool
+   - Example: "What am I carrying?" → TOOL_CALL: check_inventory(character_id=1)
 
-TOOL_CALL: deal_damage(character_id=1, amount=10)
-→ Apply damage to a character and update their HP permanently
-→ Use for: whenever a character takes damage in combat
+3. TOOL_CALL: deal_damage(character_id=1, amount=10)
+   - Reduces the PLAYER's HP permanently in the database
+   - USE FOR: ONLY when an enemy attacks the PLAYER and deals damage
+   - NEVER use this when the player is attacking an enemy
+   - NEVER use this during the player's own attack action
+   - Example: "Goblin hits me for 8" → TOOL_CALL: deal_damage(character_id=1, amount=8)
 
-Rules:
-- Only use a tool when it genuinely adds to the game
-- After a tool result, continue the narrative naturally
-- Never make up dice results — always use roll_dice
-- Always deal damage using deal_damage, never just narrate it
+STRICT RULES:
+- Call ONE tool per response, then wait for TOOL_RESULT
+- After receiving TOOL_RESULT, give your narrative and STOP
+- Never call the same tool twice in one exchange
+- Never use deal_damage when the player is attacking
 """
 
 
 def parse_tool_call(text: str):
     """
     Check if the LLM output contains a tool call.
-    If yes, extract the tool name and arguments.
-    If no, return None.
-
-    Example input:  "TOOL_CALL: roll_dice(sides=20)"
-    Example output: ("roll_dice", {"sides": 20})
+    Handles multiple formats the model might use.
     """
 
-    # Look for the TOOL_CALL pattern anywhere in the text
-    pattern = r"TOOL_CALL:\s*(\w+)\(([^)]*)\)"
-    match = re.search(pattern, text)
+    # Pattern 1: Ideal format with TOOL_CALL prefix
+    pattern_with_prefix = r"TOOL_CALL:\s*(\w+)\(([^)]*)\)"
+    match = re.search(pattern_with_prefix, text, re.IGNORECASE)
 
-    if not match:
-        # No tool call found — normal response
-        return None
+    if match:
+        tool_name = match.group(1).lower()
+        args_string = match.group(2)
 
-    tool_name = match.group(1)        # e.g. "roll_dice"
-    args_string = match.group(2)      # e.g. "sides=20"
+    else:
+        # Pattern 2: Model skipped the prefix
+        tool_names = "|".join(AVAILABLE_TOOLS.keys())
+        pattern_no_prefix = rf"({tool_names})\(([^)]*)\)"
+        match = re.search(pattern_no_prefix, text, re.IGNORECASE)
 
-    # Parse the arguments string into a dictionary
-    # "sides=20, character_id=1" → {"sides": 20, "character_id": 1}
+        if not match:
+            return None
+
+        tool_name = match.group(1).lower()
+        args_string = match.group(2)
+
+    # Parse arguments string into a dictionary
     arguments = {}
-
     if args_string.strip():
-        # Split by comma to get individual arguments
         for arg in args_string.split(","):
             arg = arg.strip()
             if "=" in arg:
@@ -75,15 +83,12 @@ def parse_tool_call(text: str):
                 key = key.strip()
                 value = value.strip()
 
-                # Convert to correct Python type
-                # Try integer first, then float, then keep as string
                 try:
                     arguments[key] = int(value)
                 except ValueError:
                     try:
                         arguments[key] = float(value)
                     except ValueError:
-                        # Remove quotes if present
                         arguments[key] = value.strip("\"'")
 
     return tool_name, arguments
@@ -93,46 +98,26 @@ def execute_tool(tool_name: str, arguments: dict) -> str:
     """
     Look up and execute a tool by name.
     Returns a string description of the result.
-
-    Args:
-        tool_name: Name of the tool to call
-        arguments: Dictionary of arguments to pass
-
-    Returns:
-        String result to feed back to the LLM
     """
 
-    # Check if tool exists
     if tool_name not in AVAILABLE_TOOLS:
         return f"Error: Tool '{tool_name}' does not exist."
 
-    # Get the function from our dictionary
     tool_function = AVAILABLE_TOOLS[tool_name]
-
-    # Call the function with the parsed arguments
     result = tool_function(**arguments)
 
-    # Return the human readable description
     if result.get("success"):
         return result["description"]
     else:
         return f"Tool error: {result.get('error', 'Unknown error')}"
 
 
-def run_agent(prompt: str, max_steps: int = 5) -> str:
+def run_agent(prompt: str, max_steps: int = 3) -> str:
     """
     The agent loop. Runs the LLM and handles tool calls.
 
-    This loop continues until:
-    - The LLM gives a normal response (no tool call)
-    - We hit max_steps (prevents infinite loops)
-
-    Args:
-        prompt: The full prompt to send to the LLM
-        max_steps: Maximum number of tool calls allowed per response
-
-    Returns:
-        Final narrative response to show the player
+    Reduced to max_steps=3 — one tool call should be enough
+    for any single player action.
     """
 
     current_prompt = prompt
@@ -141,15 +126,13 @@ def run_agent(prompt: str, max_steps: int = 5) -> str:
     while steps < max_steps:
         steps += 1
 
-        # Ask the LLM for a response
         llm_response = ask_llm(current_prompt)
-
-        # Check if the response contains a tool call
         tool_call = parse_tool_call(llm_response)
 
         if tool_call is None:
-            # No tool call — this is the final narrative response
-            return llm_response
+            # No tool call — clean and return final narrative
+            cleaned = re.sub(r"TOOL_CALL:.*\n?", "", llm_response).strip()
+            return cleaned
 
         # Tool call detected — execute it
         tool_name, arguments = tool_call
@@ -158,20 +141,22 @@ def run_agent(prompt: str, max_steps: int = 5) -> str:
         tool_result = execute_tool(tool_name, arguments)
         print(f"[Agent] Tool result: {tool_result}")
 
-        # Feed the tool result back into the prompt
-        # The LLM sees what happened and continues the narrative
+        # Feed result back — explicitly tell model to stop and narrate
         current_prompt = (
             current_prompt +
-            f"\n{llm_response}" +           # What LLM said including tool call
-            f"\nTOOL_RESULT: {tool_result}" # What the tool returned
-            f"\nDungeon Master:"            # Cue to continue
+            f"\n{llm_response}"
+            f"\nTOOL_RESULT: {tool_result}\n"
+            f"\nNow give your final narrative response. "
+            f"Do NOT call any more tools. Just describe what happened.\n"
+            f"Dungeon Master:"
         )
 
-    # If we hit max_steps, return whatever the last response was
-    return llm_response
+    # Hit max_steps — clean leftover TOOL_CALL text before returning
+    cleaned = re.sub(r"TOOL_CALL:.*\n?", "", llm_response).strip()
+    return cleaned
 
 
-# Test the agent when run directly
+# Test when run directly
 if __name__ == "__main__":
     from app.rag.pipeline import retrieve_context, build_rag_prompt
 
@@ -180,7 +165,6 @@ You speak in an atmospheric, immersive tone.
 Never break character.
 Keep responses under 4 sentences."""
 
-    # Combine system prompt with tools description
     full_system = SYSTEM_PROMPT + "\n\n" + TOOLS_DESCRIPTION
 
     test_scenarios = [
@@ -211,7 +195,6 @@ Keep responses under 4 sentences."""
         print(f"Player: {test['messages'][-1]['content']}")
         print("-" * 50)
 
-        # Build prompt with tools knowledge
         context = retrieve_context(
             query=test["messages"][-1]["content"],
             messages=test["messages"]
@@ -223,5 +206,6 @@ Keep responses under 4 sentences."""
             messages=test["messages"]
         )
 
+        # Run the agent and display response
         response = run_agent(prompt)
         print(f"Aldric: {response}")
