@@ -1,4 +1,6 @@
 # app/api/routes.py
+from app.core.npcs import detect_npc, get_personality_prompt, ALDRIC_PERSONALITY
+from app.core.agent import run_agent, TOOLS_DESCRIPTION
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -9,7 +11,6 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from app.rag.pipeline import retrieve_context, build_rag_prompt
-from app.core.agent import run_agent, TOOLS_DESCRIPTION
 from app.db.database import initialize_database
 from app.db.memory import (
     create_session,
@@ -121,14 +122,36 @@ def chat(request: ChatRequest):
 
         combined_context = memory_context + lore_context
 
+        # --- NPC Detection ---
+        # Check if player is addressing a specific NPC
+        npc_key = detect_npc(latest_message)
+
+        # Get the right personality for this message
+        personality = get_personality_prompt(npc_key)
+
+        if npc_key:
+            # NPC speaking — no tool descriptions needed
+            # NPCs don't roll dice or check inventory
+            system_prompt = personality
+            print(f"[NPC] Switching to: {npc_key}")
+        else:
+            # Aldric narrating — include tools
+            system_prompt = personality + "\n\n" + TOOLS_DESCRIPTION
+
+        # --- Build prompt with dynamic personality ---
         prompt = build_rag_prompt(
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             context=combined_context,
             messages=messages_as_dicts
         )
 
-        # ✅ THE FIX — pass player_message so pre-detection runs
-        response = run_agent(prompt, player_message=latest_message)
+        # --- Run agent ---
+        # Only pass player_message for tool detection when Aldric is speaking
+        # NPCs don't use tools
+        if npc_key:
+            response = run_agent(prompt, player_message="")
+        else:
+            response = run_agent(prompt, player_message=latest_message)
 
         # Save both messages
         save_message(

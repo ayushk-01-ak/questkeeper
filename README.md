@@ -18,8 +18,8 @@ Runs completely offline using Ollama and a local LLM.
 | Phase 6 | RAG Pipeline | ✅ Complete |
 | Phase 7 | Tool Calling | ✅ Complete |
 | Phase 8 | Conversation Memory | ✅ Complete |
-| Phase 9 | NPC Personalities   | 🚧 In Progress |
-| Phase 10 | Docker | ⏳ Upcoming |
+| Phase 9  | NPC Personalities   | ✅ Complete |
+| Phase 10 | Docker | 🚧 In Progress |
 | Phase 11 | CI/CD | ⏳ Upcoming |
 
 ---
