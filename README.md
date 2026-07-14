@@ -17,8 +17,8 @@ Runs completely offline using Ollama and a local LLM.
 | Phase 5 | SQLite Database | ✅ Complete |
 | Phase 6 | RAG Pipeline | ✅ Complete |
 | Phase 7 | Tool Calling | ✅ Complete |
-| Phase 8 | Conversation Memory |🚧 In Progress |
-| Phase 9 | NPC Personalities | ⏳ Upcoming |
+| Phase 8 | Conversation Memory | ✅ Complete |
+| Phase 9 | NPC Personalities   | 🚧 In Progress |
 | Phase 10 | Docker | ⏳ Upcoming |
 | Phase 11 | CI/CD | ⏳ Upcoming |
 
