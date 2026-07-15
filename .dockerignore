@@ -1,0 +1,24 @@
+﻿# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Database files
+*.db
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Docker files (optional)
+Dockerfile
+docker-compose.yml
+.dockerignore

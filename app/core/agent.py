@@ -181,5 +181,6 @@ def run_agent(prompt: str, player_message: str = "", max_steps: int = 3) -> str:
             f"Dungeon Master:"
         )
 
-    cleaned = re.sub(r"TOOL_CALL:.*\n?", "", llm_response).strip()
+    cleaned = re.sub(r"TOOL_CALL:.*\n?", "", llm_response)
+    cleaned = re.sub(r"TOOL_RESULT:.*\n?", "", cleaned).strip()
     return cleaned
