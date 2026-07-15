@@ -11,10 +11,13 @@ def add_item(character_id: int, item_name: str, quantity: int = 1) -> None:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO inventory (character_id, item_name, quantity)
         VALUES (?, ?, ?)
-    """, (character_id, item_name, quantity))
+    """,
+        (character_id, item_name, quantity),
+    )
 
     connection.commit()
     connection.close()
@@ -28,12 +31,15 @@ def get_inventory(character_id: int) -> list:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT item_name, quantity
         FROM inventory
         WHERE character_id = ?
         ORDER BY item_name
-    """, (character_id,))
+    """,
+        (character_id,),
+    )
 
     rows = cursor.fetchall()
     connection.close()
@@ -48,10 +54,13 @@ def remove_item(character_id: int, item_name: str) -> None:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         DELETE FROM inventory
         WHERE character_id = ? AND item_name = ?
-    """, (character_id, item_name))
+    """,
+        (character_id, item_name),
+    )
 
     connection.commit()
     connection.close()

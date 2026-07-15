@@ -8,8 +8,7 @@ import os
 
 # Reuse the same constants from embedder
 CHROMA_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    "chroma_store"
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_store"
 )
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 COLLECTION_NAME = "questkeeper_lore"
@@ -61,8 +60,7 @@ def retrieve_context(query: str, top_k: int = 3, messages: list = None) -> str:
     # Connect to ChromaDB
     client = chromadb.PersistentClient(path=CHROMA_PATH)
     collection = client.get_or_create_collection(
-        name=COLLECTION_NAME,
-        metadata={"hnsw:space": "cosine"}
+        name=COLLECTION_NAME, metadata={"hnsw:space": "cosine"}
     )
 
     # Check if we have any documents stored
@@ -75,7 +73,7 @@ def retrieve_context(query: str, top_k: int = 3, messages: list = None) -> str:
     # Find top_k most similar chunks
     results = collection.query(
         query_embeddings=query_embedding.tolist(),
-        n_results=min(top_k, collection.count())
+        n_results=min(top_k, collection.count()),
     )
 
     chunks = results["documents"][0]
@@ -85,8 +83,7 @@ def retrieve_context(query: str, top_k: int = 3, messages: list = None) -> str:
     # Connect to ChromaDB
     client = chromadb.PersistentClient(path=CHROMA_PATH)
     collection = client.get_or_create_collection(
-        name=COLLECTION_NAME,
-        metadata={"hnsw:space": "cosine"}
+        name=COLLECTION_NAME, metadata={"hnsw:space": "cosine"}
     )
 
     # Check if we have any documents stored
@@ -100,7 +97,7 @@ def retrieve_context(query: str, top_k: int = 3, messages: list = None) -> str:
     # Find top_k most similar chunks
     results = collection.query(
         query_embeddings=query_embedding.tolist(),
-        n_results=min(top_k, collection.count())
+        n_results=min(top_k, collection.count()),
         # min() prevents asking for more results than we have
     )
 
@@ -111,11 +108,7 @@ def retrieve_context(query: str, top_k: int = 3, messages: list = None) -> str:
     return context
 
 
-def build_rag_prompt(
-    system_prompt: str,
-    context: str,
-    messages: list
-) -> str:
+def build_rag_prompt(system_prompt: str, context: str, messages: list) -> str:
     """
     Build a complete prompt that includes:
     - DM personality (system prompt)
@@ -166,7 +159,7 @@ Keep responses under 4 sentences unless asked for more."""
     test_questions = [
         "Who is the Hollow King and where does he live?",
         "What are the rules for critical hits in this campaign?",
-        "Tell me about Mira Thornquist"
+        "Tell me about Mira Thornquist",
     ]
 
     print("Testing RAG pipeline end to end...")

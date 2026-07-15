@@ -8,15 +8,14 @@ import os
 # The database file will be created in the project root
 # If it doesn't exist, SQLite creates it automatically
 DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    "questkeeper.db"
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "questkeeper.db"
 )
 
 
 def get_connection():
     """
     Create and return a database connection.
-    
+
     We call this every time we need to talk to the database.
     Always close the connection when done — like closing a file.
     """

@@ -26,10 +26,7 @@ def roll_dice(sides: int) -> dict:
     valid_sides = [4, 6, 8, 10, 12, 20, 100]
 
     if sides not in valid_sides:
-        return {
-            "success": False,
-            "error": f"Invalid dice. Choose from: {valid_sides}"
-        }
+        return {"success": False, "error": f"Invalid dice. Choose from: {valid_sides}"}
 
     result = random.randint(1, sides)
 
@@ -37,7 +34,7 @@ def roll_dice(sides: int) -> dict:
         "success": True,
         "sides": sides,
         "result": result,
-        "description": f"Rolled d{sides}: {result}"
+        "description": f"Rolled d{sides}: {result}",
     }
 
 
@@ -55,10 +52,7 @@ def check_inventory(character_id: int) -> dict:
     character = get_character(character_id)
 
     if character is None:
-        return {
-            "success": False,
-            "error": f"No character found with id {character_id}"
-        }
+        return {"success": False, "error": f"No character found with id {character_id}"}
 
     # Get their inventory from database
     items = get_inventory(character_id)
@@ -68,11 +62,13 @@ def check_inventory(character_id: int) -> dict:
         "character_name": character["name"],
         "character_class": character["class"],
         "current_hp": character["hp"],
-        "inventory": items,    # List of {item_name, quantity} dicts
-        "description": f"{character['name']} is carrying: " +
-                      (", ".join([f"{i['item_name']} x{i['quantity']}"
-                                  for i in items])
-                       if items else "nothing")
+        "inventory": items,  # List of {item_name, quantity} dicts
+        "description": f"{character['name']} is carrying: "
+        + (
+            ", ".join([f"{i['item_name']} x{i['quantity']}" for i in items])
+            if items
+            else "nothing"
+        ),
     }
 
 
@@ -90,10 +86,7 @@ def deal_damage(character_id: int, amount: int) -> dict:
     character = get_character(character_id)
 
     if character is None:
-        return {
-            "success": False,
-            "error": f"No character found with id {character_id}"
-        }
+        return {"success": False, "error": f"No character found with id {character_id}"}
 
     old_hp = character["hp"]
 
@@ -117,7 +110,7 @@ def deal_damage(character_id: int, amount: int) -> dict:
             f"{character['name']} took {amount} damage. "
             f"HP: {old_hp} → {new_hp}. "
             f"{'UNCONSCIOUS!' if is_down else 'Still standing.'}"
-        )
+        ),
     }
 
 
@@ -126,7 +119,7 @@ def deal_damage(character_id: int, amount: int) -> dict:
 AVAILABLE_TOOLS = {
     "roll_dice": roll_dice,
     "check_inventory": check_inventory,
-    "deal_damage": deal_damage
+    "deal_damage": deal_damage,
 }
 
 
@@ -149,5 +142,6 @@ if __name__ == "__main__":
 
     # Check HP actually changed in database
     from app.db.characters import get_character
+
     updated = get_character(1)
     print(f"Confirmed new HP in database: {updated['hp']}")

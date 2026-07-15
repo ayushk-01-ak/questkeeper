@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from app.core.llm import ask_llm
 from app.core.tools import AVAILABLE_TOOLS
 
-
 TOOLS_DESCRIPTION = """
 You have access to tools. Results will be provided as TOOL_RESULT.
 When you see a TOOL_RESULT, use that exact information in your narrative.
@@ -18,20 +17,39 @@ a TOOL_RESULT explicitly says HP reached 0.
 """
 
 DAMAGE_KEYWORDS = [
-    "hits me", "hit me", "attacks me", "attack me",
-    "damage", "takes damage", "struck", "wounds me",
-    "injures me", "hurts me"
+    "hits me",
+    "hit me",
+    "attacks me",
+    "attack me",
+    "damage",
+    "takes damage",
+    "struck",
+    "wounds me",
+    "injures me",
+    "hurts me",
 ]
 
 ATTACK_KEYWORDS = [
-    "i attack", "i strike", "i swing", "i slash",
-    "i stab", "i shoot", "i cast", "i charge",
-    "i hit", "i fight"
+    "i attack",
+    "i strike",
+    "i swing",
+    "i slash",
+    "i stab",
+    "i shoot",
+    "i cast",
+    "i charge",
+    "i hit",
+    "i fight",
 ]
 
 INVENTORY_KEYWORDS = [
-    "inventory", "carrying", "what do i have",
-    "my items", "my bag", "my pack", "what's in"
+    "inventory",
+    "carrying",
+    "what do i have",
+    "my items",
+    "my bag",
+    "my pack",
+    "what's in",
 ]
 
 
@@ -48,13 +66,13 @@ def detect_tool_from_message(message: str) -> tuple:
         # ✅ FIX: Look for number immediately before "damage" word
         # "level 5 spell for 12 damage" → finds 12, not 5
         # "hits me for 20 damage" → finds 20
-        damage_match = re.search(r'(\d+)\s*(?:points?\s*of\s*)?damage', message_lower)
+        damage_match = re.search(r"(\d+)\s*(?:points?\s*of\s*)?damage", message_lower)
 
         if damage_match:
             amount = int(damage_match.group(1))
         else:
             # Fallback: no "X damage" pattern, try "for X" pattern
-            for_match = re.search(r'for\s+(\d+)', message_lower)
+            for_match = re.search(r"for\s+(\d+)", message_lower)
             if for_match:
                 amount = int(for_match.group(1))
             else:
@@ -174,8 +192,7 @@ def run_agent(prompt: str, player_message: str = "", max_steps: int = 3) -> str:
         print(f"[Agent] Tool result: {tool_result}")
 
         full_prompt = (
-            full_prompt +
-            f"\n{llm_response}"
+            full_prompt + f"\n{llm_response}"
             f"\nTOOL_RESULT: {tool_result}\n"
             f"\nNow give your final narrative. Do NOT call more tools.\n"
             f"Dungeon Master:"

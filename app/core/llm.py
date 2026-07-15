@@ -15,11 +15,7 @@ def ask_llm(prompt: str) -> str:
     """
     Send a single prompt to the LLM and return response.
     """
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": prompt,
-        "stream": False
-    }
+    payload = {"model": MODEL_NAME, "prompt": prompt, "stream": False}
 
     response = requests.post(OLLAMA_URL, json=payload)
     data = response.json()
@@ -40,11 +36,7 @@ def ask_llm_with_history(messages: list, system_prompt: str) -> str:
 
     full_prompt += "Dungeon Master:"
 
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": full_prompt,
-        "stream": False
-    }
+    payload = {"model": MODEL_NAME, "prompt": full_prompt, "stream": False}
 
     response = requests.post(OLLAMA_URL, json=payload)
     data = response.json()

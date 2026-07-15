@@ -14,10 +14,13 @@ def create_character(name: str, character_class: str, backstory: str = "") -> in
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO characters (name, class, backstory)
         VALUES (?, ?, ?)
-    """, (name, character_class, backstory))
+    """,
+        (name, character_class, backstory),
+    )
     # Notice the ? placeholders — NEVER put variables directly in SQL strings
     # That causes SQL injection vulnerabilities
     # The (name, character_class, backstory) tuple fills the ? safely
@@ -39,9 +42,12 @@ def get_character(character_id: int) -> dict:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT * FROM characters WHERE id = ?
-    """, (character_id,))
+    """,
+        (character_id,),
+    )
     # Note the trailing comma in (character_id,)
     # This makes it a tuple, which sqlite3 requires
 
@@ -79,9 +85,12 @@ def update_character_hp(character_id: int, new_hp: int) -> None:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE characters SET hp = ? WHERE id = ?
-    """, (new_hp, character_id))
+    """,
+        (new_hp, character_id),
+    )
 
     connection.commit()
     connection.close()

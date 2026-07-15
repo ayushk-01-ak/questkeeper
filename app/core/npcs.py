@@ -8,11 +8,13 @@
 # - voice_example: how they sound (for reference, not sent to LLM)
 
 NPC_PROFILES = {
-
     "mira_thornquist": {
         "keywords": [
-            "mira", "thornquist", "captain", "guard captain",
-            "highspire guard"
+            "mira",
+            "thornquist",
+            "captain",
+            "guard captain",
+            "highspire guard",
         ],
         "personality": """You are now speaking as Mira Thornquist,
 Captain of the Highspire Guard.
@@ -36,15 +38,10 @@ EXAMPLE OF HOW YOU SPEAK:
 "The Thornwood bandits are my problem. Not yours."
 
 Stay in character completely. Never break into Aldric's narration voice.""",
-
-        "voice_example": "Gruff, direct, suspicious, protective"
+        "voice_example": "Gruff, direct, suspicious, protective",
     },
-
     "old_cobb": {
-        "keywords": [
-            "cobb", "old cobb", "hermit", "blind hermit",
-            "thornwood hermit"
-        ],
+        "keywords": ["cobb", "old cobb", "hermit", "blind hermit", "thornwood hermit"],
         "personality": """You are now speaking as Old Cobb,
 a blind hermit who communes with spirits of the dead.
 
@@ -68,14 +65,15 @@ EXAMPLE OF HOW YOU SPEAK:
 "Velmorath did not die. The dead would know. They always know."
 
 Stay in character completely. Never break into Aldric's narration voice.""",
-
-        "voice_example": "Cryptic, spiritual, time-confused, amused"
+        "voice_example": "Cryptic, spiritual, time-confused, amused",
     },
-
     "hollow_king": {
         "keywords": [
-            "hollow king", "velmorath", "dark lord",
-            "king of ash", "shadow king"
+            "hollow king",
+            "velmorath",
+            "dark lord",
+            "king of ash",
+            "shadow king",
         ],
         "personality": """You are now speaking as the Hollow King,
 formerly the wizard Velmorath, now a being of pure shadow.
@@ -101,9 +99,8 @@ EXAMPLE OF HOW YOU SPEAK:
 
 Stay in character completely. Aldric does not narrate during 
 Hollow King's speech — he is too afraid.""",
-
-        "voice_example": "Cold, certain, slow, ancient, terrifying"
-    }
+        "voice_example": "Cold, certain, slow, ancient, terrifying",
+    },
 }
 
 # Default Aldric narration — used when no NPC is detected
@@ -128,8 +125,7 @@ def detect_npc(message: str) -> str | None:
     message_lower = message.lower()
 
     for npc_key, profile in NPC_PROFILES.items():
-        if any(keyword in message_lower
-               for keyword in profile["keywords"]):
+        if any(keyword in message_lower for keyword in profile["keywords"]):
             return npc_key
 
     return None

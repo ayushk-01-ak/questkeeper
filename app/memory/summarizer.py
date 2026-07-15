@@ -70,11 +70,20 @@ if __name__ == "__main__":
     # Simulate a short adventure
     test_messages = [
         ("user", "I enter the Ashlands carefully"),
-        ("assistant", "The ash swirls around your boots as you step into the blighted shard. The air tastes of sulfur and old magic."),
+        (
+            "assistant",
+            "The ash swirls around your boots as you step into the blighted shard. The air tastes of sulfur and old magic.",
+        ),
         ("user", "I search for the Soulshard"),
-        ("assistant", "After an hour of searching through ruins, you discover a glowing crystal fragment near Karneth Hollow. It pulses with dark energy."),
+        (
+            "assistant",
+            "After an hour of searching through ruins, you discover a glowing crystal fragment near Karneth Hollow. It pulses with dark energy.",
+        ),
         ("user", "I pick it up and head back"),
-        ("assistant", "As you reach for the Soulshard, an ash wraith materializes. You take 20 damage before managing to flee with the crystal.")
+        (
+            "assistant",
+            "As you reach for the Soulshard, an ash wraith materializes. You take 20 damage before managing to flee with the crystal.",
+        ),
     ]
 
     for role, content in test_messages:

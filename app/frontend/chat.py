@@ -6,13 +6,10 @@ import streamlit as st
 import requests
 
 import os
+
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
-st.set_page_config(
-    page_title="QuestKeeper",
-    page_icon="🎲",
-    layout="centered"
-)
+st.set_page_config(page_title="QuestKeeper", page_icon="🎲", layout="centered")
 
 st.title("🎲 QuestKeeper")
 st.caption("Your local AI Dungeon Master")
@@ -71,8 +68,7 @@ if not st.session_state.session_started:
 
     # Start a new session on the backend
     session_response = requests.post(
-        f"{API_URL}/session/start",
-        json={"character_id": CHARACTER_ID}
+        f"{API_URL}/session/start", json={"character_id": CHARACTER_ID}
     )
 
     if session_response.status_code == 200:
@@ -92,7 +88,7 @@ with st.sidebar:
             with st.spinner("Summarizing session..."):
                 end_response = requests.post(
                     f"{API_URL}/session/end",
-                    json={"session_id": st.session_state.session_id}
+                    json={"session_id": st.session_state.session_id},
                 )
 
             if end_response.status_code == 200:
@@ -123,10 +119,7 @@ user_input = st.chat_input("Speak, adventurer...")
 
 if user_input:
 
-    st.session_state.messages.append({
-        "role": "user",
-        "content": user_input
-    })
+    st.session_state.messages.append({"role": "user", "content": user_input})
 
     with st.chat_message("user"):
         st.write(user_input)
@@ -138,9 +131,9 @@ if user_input:
                 json={
                     "messages": st.session_state.messages,
                     "character_id": CHARACTER_ID,
-                    "session_id": st.session_state.session_id
+                    "session_id": st.session_state.session_id,
                 },
-                timeout=60
+                timeout=60,
             )
 
             if api_response.status_code == 200:
@@ -161,10 +154,7 @@ if user_input:
         except requests.exceptions.ConnectionError:
             response = "⚠️ Lost connection to backend."
 
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": response
-    })
+    st.session_state.messages.append({"role": "assistant", "content": response})
 
     with st.chat_message("assistant"):
         st.write(response)

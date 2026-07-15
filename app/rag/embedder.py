@@ -8,8 +8,7 @@ import os
 # Where ChromaDB will store its data on disk
 # This persists between runs — like SQLite but for vectors
 CHROMA_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    "chroma_store"
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_store"
 )
 
 # The embedding model name
@@ -32,7 +31,7 @@ def get_chroma_collection():
     # get_or_create means: use existing collection OR create new one
     collection = client.get_or_create_collection(
         name=COLLECTION_NAME,
-        metadata={"hnsw:space": "cosine"}
+        metadata={"hnsw:space": "cosine"},
         # cosine = measure similarity by angle between vectors
         # better for text than raw distance
     )
@@ -65,9 +64,7 @@ def embed_and_store(chunks: list) -> None:
     if existing > 0:
         print(f"Collection already has {existing} chunks. Clearing before reload...")
         # Delete all existing entries so we don't duplicate
-        collection.delete(
-            where={"source": {"$exists": True}}
-        )
+        collection.delete(where={"source": {"$exists": True}})
 
     # Store everything in ChromaDB
     # Each chunk needs: an id, the embedding vector, and the original text
@@ -75,8 +72,10 @@ def embed_and_store(chunks: list) -> None:
         ids=[f"chunk_{i}" for i in range(len(chunks))],
         embeddings=embeddings.tolist(),
         documents=chunks,
-        metadatas=[{"source": "questkeeper_lore.pdf", "chunk_index": i}
-                   for i in range(len(chunks))]
+        metadatas=[
+            {"source": "questkeeper_lore.pdf", "chunk_index": i}
+            for i in range(len(chunks))
+        ],
     )
 
     print(f"Stored {len(chunks)} chunks in ChromaDB at: {CHROMA_PATH}")
@@ -105,8 +104,7 @@ def retrieve_relevant_chunks(query: str, top_k: int = 3) -> list:
 
     # Ask ChromaDB for the top_k most similar chunks
     results = collection.query(
-        query_embeddings=query_embedding.tolist(),
-        n_results=top_k
+        query_embeddings=query_embedding.tolist(), n_results=top_k
     )
 
     # results["documents"] is a list of lists, we want the inner list
@@ -133,7 +131,7 @@ if __name__ == "__main__":
     test_queries = [
         "Who is the Hollow King?",
         "What happens on a critical hit?",
-        "Tell me about Mira Thornquist"
+        "Tell me about Mira Thornquist",
     ]
 
     for query in test_queries:

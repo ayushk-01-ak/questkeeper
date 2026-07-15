@@ -1,0 +1,71 @@
+﻿# .github/workflows/ci.yml
+# This runs automatically on every push to GitHub
+# Catches formatting errors and broken imports before they spread
+
+name: QuestKeeper CI
+
+# When to run this workflow
+on:
+  push:
+    branches: [ main ]      # runs on every push to main
+  pull_request:
+    branches: [ main ]      # runs on every pull request to main
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest  # GitHub spins up a fresh Ubuntu machine
+
+    steps:
+      # Step 1: Download your repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Step 3: Cache pip packages
+      # If requirements.txt hasn't changed, skip reinstalling
+      # Makes CI runs much faster
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black pytest
+
+      # Step 5: Check code formatting with black
+      # Fails if any file needs reformatting
+      - name: Check code formatting
+        run: |
+          black --check --diff app/
+        # --diff shows exactly what black would change
+
+      # Step 6: Verify all modules import correctly
+      # Catches missing imports, syntax errors, wrong paths
+      - name: Validate imports
+        run: |
+          python -c "from app.core.llm import ask_llm; print('llm ✅')"
+          python -c "from app.core.tools import AVAILABLE_TOOLS; print('tools ✅')"
+          python -c "from app.core.agent import run_agent; print('agent ✅')"
+          python -c "from app.db.database import initialize_database; print('database ✅')"
+          python -c "from app.db.characters import get_character; print('characters ✅')"
+          python -c "from app.db.inventory import get_inventory; print('inventory ✅')"
+          python -c "from app.db.memory import create_session; print('memory ✅')"
+          python -c "from app.core.npcs import detect_npc; print('npcs ✅')"
+          # Step 7: Run tests
+      - name: Run tests
+        run: |
+          pytest tests/ -v
+        # -v shows each test name and pass/fail individually

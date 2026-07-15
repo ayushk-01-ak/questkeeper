@@ -16,7 +16,7 @@ from app.db.memory import (
     create_session,
     save_message,
     get_recent_messages,
-    get_all_summaries
+    get_all_summaries,
 )
 from app.memory.summarizer import summarize_session
 
@@ -87,15 +87,14 @@ def get_memory(character_id: int):
     return {
         "character_id": character_id,
         "past_summaries": summaries,
-        "recent_messages": recent
+        "recent_messages": recent,
     }
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     messages_as_dicts = [
-        {"role": msg.role, "content": msg.content}
-        for msg in request.messages
+        {"role": msg.role, "content": msg.content} for msg in request.messages
     ]
 
     session_id = request.session_id
@@ -116,8 +115,7 @@ def chat(request: ChatRequest):
 
         # RAG retrieval
         lore_context = retrieve_context(
-            query=latest_message,
-            messages=messages_as_dicts
+            query=latest_message, messages=messages_as_dicts
         )
 
         combined_context = memory_context + lore_context
@@ -142,7 +140,7 @@ def chat(request: ChatRequest):
         prompt = build_rag_prompt(
             system_prompt=system_prompt,
             context=combined_context,
-            messages=messages_as_dicts
+            messages=messages_as_dicts,
         )
 
         # --- Run agent ---
@@ -158,13 +156,13 @@ def chat(request: ChatRequest):
             session_id=session_id,
             character_id=request.character_id,
             role="user",
-            content=latest_message
+            content=latest_message,
         )
         save_message(
             session_id=session_id,
             character_id=request.character_id,
             role="assistant",
-            content=response
+            content=response,
         )
 
         return ChatResponse(response=response, session_id=session_id)

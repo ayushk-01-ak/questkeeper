@@ -17,10 +17,13 @@ def create_session(character_id: int) -> int:
     # Record when this session started
     started_at = datetime.now().isoformat()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO sessions (character_id, started_at)
         VALUES (?, ?)
-    """, (character_id, started_at))
+    """,
+        (character_id, started_at),
+    )
 
     session_id = cursor.lastrowid
     connection.commit()
@@ -29,8 +32,7 @@ def create_session(character_id: int) -> int:
     return session_id
 
 
-def save_message(session_id: int, character_id: int,
-                 role: str, content: str) -> None:
+def save_message(session_id: int, character_id: int, role: str, content: str) -> None:
     """
     Save a single message to the database.
 
@@ -45,10 +47,13 @@ def save_message(session_id: int, character_id: int,
 
     created_at = datetime.now().isoformat()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO messages (session_id, character_id, role, content, created_at)
         VALUES (?, ?, ?, ?, ?)
-    """, (session_id, character_id, role, content, created_at))
+    """,
+        (session_id, character_id, role, content, created_at),
+    )
 
     connection.commit()
     connection.close()
@@ -69,13 +74,16 @@ def get_recent_messages(character_id: int, limit: int = 20) -> list:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT role, content
         FROM messages
         WHERE character_id = ?
         ORDER BY created_at DESC
         LIMIT ?
-    """, (character_id, limit))
+    """,
+        (character_id, limit),
+    )
 
     rows = cursor.fetchall()
     connection.close()
@@ -96,12 +104,15 @@ def get_session_messages(session_id: int) -> list:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT role, content
         FROM messages
         WHERE session_id = ?
         ORDER BY created_at ASC
-    """, (session_id,))
+    """,
+        (session_id,),
+    )
 
     rows = cursor.fetchall()
     connection.close()
@@ -117,11 +128,14 @@ def save_session_summary(session_id: int, summary: str) -> None:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE sessions
         SET summary = ?
         WHERE id = ?
-    """, (summary, session_id))
+    """,
+        (summary, session_id),
+    )
 
     connection.commit()
     connection.close()
@@ -138,13 +152,16 @@ def get_all_summaries(character_id: int) -> list:
     connection = get_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT summary, started_at
         FROM sessions
         WHERE character_id = ?
         AND summary != ''
         ORDER BY started_at ASC
-    """, (character_id,))
+    """,
+        (character_id,),
+    )
 
     rows = cursor.fetchall()
     connection.close()
