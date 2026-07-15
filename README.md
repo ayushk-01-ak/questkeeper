@@ -4,7 +4,7 @@ A local AI-powered Dungeon Master and NPC companion.
 Runs completely offline using Ollama and a local LLM.
 No internet required after initial setup. No API costs. No data leaving your machine.
 
-![CI](https://github.com/YOURUSERNAME/questkeeper/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/ayushk-01-ak/questkeeper/actions/workflows/ci.yml/badge.svg)
 
 ---
 
@@ -86,7 +86,7 @@ ollama pull llama3.2:3b
 
 **3. Clone this repository**
 ```bash
-git clone https://github.com/YOURUSERNAME/questkeeper.git
+git clone https://github.com/ayushk-01-ak/questkeeper.git
 cd questkeeper
 ```
 
@@ -106,7 +106,7 @@ That's it. One command after setup.
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/YOURUSERNAME/questkeeper.git
+git clone https://github.com/ayushk-01-ak/questkeeper.git
 cd questkeeper
 ```
 
@@ -268,7 +268,5 @@ Every component is understood, not just copied.
 
 MIT License — use, modify, share freely.
 
-Replace Your Username
-Find these two lines and replace YOURUSERNAME with your actual GitHub username:
-markdown![CI](https://github.com/YOURUSERNAME/questkeeper/actions/workflows/ci.yml/badge.svg)
-git clone https://github.com/YOURUSERNAME/questkeeper.git
+![CI](https://github.com/ayushk-01-ak/questkeeper/actions/workflows/ci.yml/badge.svg)
+git clone https://github.com/ayushk-01-ak/questkeeper.git
