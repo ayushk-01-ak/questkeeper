@@ -150,6 +150,8 @@ http://localhost:8501
 ---
 
 ## Project Structure
+
+```
 questkeeper/
 ├── .github/
 │   └── workflows/
@@ -185,7 +187,7 @@ questkeeper/
 ├── .gitignore                  # Files excluded from Git
 ├── .dockerignore               # Files excluded from Docker
 └── README.md                   # This file
-
+```
 ---
 
 ## How It Works
