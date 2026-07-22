@@ -115,49 +115,44 @@ Open `http://localhost:8501`
 
 ---
 
-## Project Structure
-
 questkeeper/
 ├── .github/
-│ └── workflows/
-│ └── ci.yml # GitHub Actions CI pipeline
+│   └── workflows/
+│       └── ci.yml
 ├── .streamlit/
-│ └── config.toml # Theme configuration
+│   └── config.toml
 ├── app/
-│ ├── core/
-│ │ ├── llm.py # Ollama communication
-│ │ ├── tools.py # Dice, inventory, damage tools
-│ │ ├── agent.py # Tool detection and agent loop
-│ │ └── npcs.py # NPC personality profiles
-│ ├── api/
-│ │ └── routes.py # FastAPI routes
-│ ├── frontend/
-│ │ └── chat.py # Streamlit chat UI (premium theme)
-│ ├── db/
-│ │ ├── database.py # SQLite connection and init
-│ │ ├── characters.py # Character CRUD
-│ │ ├── inventory.py # Inventory CRUD
-│ │ └── memory.py # Session and message storage
-│ ├── rag/
-│ │ ├── loader.py # PDF extraction and chunking
-│ │ ├── embedder.py # Embedding and ChromaDB storage
-│ │ └── pipeline.py # RAG retrieval pipeline
-│ └── memory/
-│ └── summarizer.py # Session summarization
-├── data/ # Place your PDF lore files here
+│   ├── core/
+│   │   ├── llm.py
+│   │   ├── tools.py
+│   │   ├── agent.py
+│   │   └── npcs.py
+│   ├── api/
+│   │   └── routes.py
+│   ├── frontend/
+│   │   └── chat.py
+│   ├── db/
+│   │   ├── database.py
+│   │   ├── characters.py
+│   │   ├── inventory.py
+│   │   └── memory.py
+│   ├── rag/
+│   │   ├── loader.py
+│   │   ├── embedder.py
+│   │   └── pipeline.py
+│   └── memory/
+│       └── summarizer.py
+├── data/
 ├── tests/
-│ └── test_tools.py # Automated tests
+│   └── test_tools.py
 ├── docs/
-│ └── notes.md # Developer setup notes
+│   └── notes.md
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
 ├── .gitignore
 ├── .dockerignore
 └── README.md
-
-
----
 
 ## How It Works
 
