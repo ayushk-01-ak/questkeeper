@@ -115,6 +115,37 @@ Open `http://localhost:8501`
 
 ---
 
+## How It Works
+
+**RAG Pipeline**
+
+PDF → chunks → embeddings → ChromaDB
+Player question → vector search → relevant chunks → LLM → grounded answer
+
+
+**Tool Calling**
+
+"I attack the goblin" → code detects intent → roll_dice(20) → real result
+→ LLM narrates using that real number
+
+
+**Memory System**
+
+Every message saved to SQLite
+Session ends → LLM summarizes → saved
+Next session → summaries + recent messages loaded → full continuity
+
+
+**NPC / Persona Detection**
+
+Message mentions a character/topic → matching personality profile loaded
+→ LLM responds fully in that voice, whether narrating or giving real advice
+
+
+---
+## Project Structure
+
+```
 questkeeper/
 ├── .github/
 │   └── workflows/
@@ -153,35 +184,7 @@ questkeeper/
 ├── .gitignore
 ├── .dockerignore
 └── README.md
-
-## How It Works
-
-**RAG Pipeline**
-
-PDF → chunks → embeddings → ChromaDB
-Player question → vector search → relevant chunks → LLM → grounded answer
-
-
-**Tool Calling**
-
-"I attack the goblin" → code detects intent → roll_dice(20) → real result
-→ LLM narrates using that real number
-
-
-**Memory System**
-
-Every message saved to SQLite
-Session ends → LLM summarizes → saved
-Next session → summaries + recent messages loaded → full continuity
-
-
-**NPC / Persona Detection**
-
-Message mentions a character/topic → matching personality profile loaded
-→ LLM responds fully in that voice, whether narrating or giving real advice
-
-
----
+```
 
 ## Running Tests
 
