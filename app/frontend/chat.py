@@ -17,7 +17,8 @@ st.set_page_config(
     page_title="Wuthering Waves — Resonance Oracle",
     page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",  # FIX: sidebar now visible by default
+    # so the Save & Exit button is reachable without a hidden toggle
 )
 
 # ─────────────────────────────────────────────
@@ -35,11 +36,21 @@ CUSTOM_CSS = """
 footer                                   { visibility: hidden !important; }
 header[data-testid="stHeader"]          { display: none !important; }
 [data-testid="stToolbar"]               { display: none !important; }
-[data-testid="collapsedControl"]        { display: none !important; }
 .viewerBadge_container__r5tak          { display: none !important; }
 #stDecoration                            { display: none !important; }
 [data-testid="stStatusWidget"]          { display: none !important; }
 button[kind="header"]                   { display: none !important; }
+
+/* FIX: keep the sidebar toggle arrow but restyle it to match the theme
+   instead of hiding it — this is the ONLY way to reach the sidebar
+   (and the Save & Exit button) if the user collapses it */
+[data-testid="collapsedControl"] {
+    background: #0c1420 !important;
+    border: 1px solid #4dc8e030 !important;
+    border-radius: 8px !important;
+    color: #4dc8e0 !important;
+    top: 14px !important;
+}
 
 /* ══════════════════════════════════════
    BASE RESET
