@@ -1,5 +1,5 @@
 # app/api/routes.py
-from app.core.npcs import detect_npc, get_personality_prompt, ALDRIC_PERSONALITY
+from app.core.npcs import detect_npc, get_personality_prompt, LUMINAE_PROMPT
 from app.core.agent import run_agent, TOOLS_DESCRIPTION
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -24,12 +24,8 @@ initialize_database()
 
 app = FastAPI(title="QuestKeeper API", version="1.0")
 
-BASE_SYSTEM_PROMPT = """You are Aldric, a wise and dramatic Dungeon Master.
-You speak in an atmospheric, immersive tone.
-You remember everything the player tells you.
-Keep responses under 4 sentences unless asked for more.
-Never break character.
-The player is ALIVE unless deal_damage tool confirms HP reached 0."""
+from app.core.npcs import LUMINAE_PROMPT
+BASE_SYSTEM_PROMPT = LUMINAE_PROMPT
 
 SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + "\n\n" + TOOLS_DESCRIPTION
 

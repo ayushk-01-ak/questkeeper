@@ -1,0 +1,33 @@
+﻿# QuestKeeper Configuration File
+
+[ollama]
+host = "http://localhost:11434"
+model = "llama3.2:3b"
+stream = false
+
+[api]
+host = "0.0.0.0"
+port = 8000
+
+[streamlit]
+port = 8501
+
+[database]
+path = "questkeeper.db"
+
+[rag]
+chroma_path = "chroma_store"
+
+[debug]
+enabled = true
+
+[theme]
+base = "dark"
+backgroundColor = "#070b12"
+secondaryBackgroundColor = "#0d1526"
+textColor = "#e2eaf5"
+primaryColor = "#4dc8e0"
+font = "sans serif"
+
+[server]
+headless = true
