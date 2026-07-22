@@ -25,6 +25,7 @@ initialize_database()
 app = FastAPI(title="QuestKeeper API", version="1.0")
 
 from app.core.npcs import LUMINAE_PROMPT
+
 BASE_SYSTEM_PROMPT = LUMINAE_PROMPT
 
 SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + "\n\n" + TOOLS_DESCRIPTION

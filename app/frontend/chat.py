@@ -466,6 +466,7 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # MESSAGE RENDER HELPERS
 # ─────────────────────────────────────────────
 
+
 def render_ai_message(content: str):
     """Render an AI (Luminae) message with teal styling."""
     safe = html_lib.escape(content).replace("\n", "<br>")
@@ -623,7 +624,7 @@ with st.sidebar:
                     f'<div class="sb-card" style="border-color:#4dc8e030">'
                     f'<div class="sb-card-label">Session Summary</div>'
                     f'<div class="sb-card-value" style="font-size:12px;line-height:1.6">'
-                    f'{html_lib.escape(summary)}</div></div>',
+                    f"{html_lib.escape(summary)}</div></div>",
                     unsafe_allow_html=True,
                 )
                 st.session_state.session_started = False
@@ -689,7 +690,9 @@ if user_input:
                 response = f"Resonance disrupted: {detail}"
 
         except requests.exceptions.Timeout:
-            response = "The Oracle falls silent... the resonance took too long. Try again."
+            response = (
+                "The Oracle falls silent... the resonance took too long. Try again."
+            )
         except requests.exceptions.ConnectionError:
             response = "Resonance link severed. Is the backend still running?"
 

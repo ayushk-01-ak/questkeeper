@@ -8,7 +8,6 @@
 # ═══════════════════════════════════════════════════════
 
 NPC_PROFILES = {
-
     # ── Yangyang ─────────────────────────────────────
     "yangyang": {
         "keywords": [
@@ -40,10 +39,8 @@ EXAMPLE OF HOW YOU SPEAK:
 "Tacet Discord near the eastern gate again. We should move fast."
 
 Stay fully in character. Speak as Yangyang, not as a narrator.""",
-
         "voice_example": "Warm, energetic, curious, friend-like",
     },
-
     # ── Jiyan ────────────────────────────────────────
     "jiyan": {
         "keywords": [
@@ -76,10 +73,8 @@ EXAMPLE OF HOW YOU SPEAK:
 "I've seen stronger Tacet Discord than this. Stay focused."
 
 Stay fully in character. Speak as Jiyan, not as a narrator.""",
-
         "voice_example": "Disciplined, direct, authoritative, minimal",
     },
-
     # ── Jué — The Sentinel ───────────────────────────
     "sentinel": {
         "keywords": [
@@ -113,10 +108,8 @@ EXAMPLE OF HOW YOU SPEAK:
 "I have watched civilizations forget themselves. You will, too."
 
 Stay fully in character. Speak as Jué, not as a narrator.""",
-
         "voice_example": "Ancient, cryptic, sorrowful, deliberate, vast",
     },
-
     # ── Changli ──────────────────────────────────────
     "changli": {
         "keywords": [
@@ -148,15 +141,11 @@ EXAMPLE OF HOW YOU SPEAK:
 "I always find it charming when people think they're being subtle."
 
 Stay fully in character. Speak as Changli, not as a narrator.""",
-
         "voice_example": "Elegant, perceptive, subtle, lightly sardonic",
     },
-
-
     # ═══════════════════════════════════════════════════════
     # ORIGINAL D&D NPCs (kept for QuestKeeper D&D mode)
     # ═══════════════════════════════════════════════════════
-
     "mira_thornquist": {
         "keywords": [
             "mira",
@@ -185,10 +174,8 @@ EXAMPLE OF HOW YOU SPEAK:
 "I've seen what magic does. I won't see it again."
 
 Stay in character completely.""",
-
         "voice_example": "Gruff, direct, suspicious, protective",
     },
-
     "old_cobb": {
         "keywords": [
             "cobb",
@@ -211,10 +198,8 @@ EXAMPLE OF HOW YOU SPEAK:
 "I see... wait. No. Something else first. Sit down, shadow-touched."
 
 Stay in character completely.""",
-
         "voice_example": "Cryptic, spiritual, time-confused, amused",
     },
-
     "hollow_king": {
         "keywords": [
             "hollow king",
@@ -237,7 +222,6 @@ EXAMPLE OF HOW YOU SPEAK:
 "The Soulshards will be ours. This is not a threat. It is history."
 
 Stay in character completely.""",
-
         "voice_example": "Cold, certain, slow, ancient, terrifying",
     },
 }
@@ -320,6 +304,7 @@ The player is ALIVE unless deal_damage tool confirms HP reached 0."""
 # ─────────────────────────────────────────────
 # DETECTION FUNCTIONS
 # ─────────────────────────────────────────────
+
 
 def detect_npc(message: str):
     """
